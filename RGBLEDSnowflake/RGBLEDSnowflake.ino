@@ -1,3 +1,8 @@
+/* Written by James Cameron December 2019
+ * For use with https://www.thingiverse.com/thing:1966885 by hoangnam
+ * See more details at https://www.hackster.io/Equinaut/rgb-led-snowflake-with-arduino-uno-8553b6
+ * Requires Adafruit NeoPixel Library
+ */
 #include <Adafruit_NeoPixel.h>
 
 #define TOTALMODES 8
