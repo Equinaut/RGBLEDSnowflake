@@ -6,6 +6,6 @@ https://www.thingiverse.com/thing:1966885
 
 # Videos
 You can see the snowflake at
-https://youtu.be/vMiH3dGfiJs
-and at
-https://youtu.be/3nInVNi1MFI
+https://youtu.be/vMiH3dGfiJs,
+https://youtu.be/3nInVNi1MFI,
+and https://youtu.be/EeLCNQ6So6w
