@@ -44,20 +44,38 @@ void mode4() {
     wipe(0,0,0,35,3,false,false,mainCols[col+1]);
     if (changeMode()) return;
   }
-}void mode5() {
+}
+void mode5() {
   for (int col=0;col<6;col+=2) {
     wipe(0,0,0,35,4,false,false,mainCols[col]);
     wipe(0,0,0,35,5,false,false,mainCols[col+1]);
     if (changeMode()) return;
   }
-}void mode6() {
+}
+void mode6() {
   for (int col=0;col<6;col+=2) {
     wipe(0,0,0,100,6,false,false,mainCols[col]);
     wipe(0,0,0,100,7,false,false,mainCols[col+1]);
     if (changeMode()) return;
   }
 }
-
+void mode7() {
+  int centerLED = 0;
+  int distances[NUMPIXELS];
+  int maxDistance = 0;
+  for (int i=0; i<NUMPIXELS;i++) {
+    int distance = int(sqrt(sq(xs[i]-xs[centerLED])+sq(ys[i]-ys[centerLED]))); 
+    distances[i] = distance;
+    if (distance>maxDistance) maxDistance = distance;
+  }
+  for (int radius=0;radius<maxDistance;radius++) {
+    for (int i=0; i<NUMPIXELS;i++) {
+      if (distances[i]<=radius) pixels.setPixelColor(i,pixels.Color(255,0,0));  
+    }  
+    pixels.show();
+    delay(20);
+  }
+}
 
 /*
 void mode0() {
