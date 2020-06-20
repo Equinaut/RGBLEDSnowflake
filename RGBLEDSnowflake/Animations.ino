@@ -1,4 +1,55 @@
-//Define all modes
+//Simple animations
+
+void wipe(colour col=pixels.Color(0,0,0),int wipeSpeed=4,int dir=0) {
+  for (int i=-400;i<400;i+=wipeSpeed) {
+    for (int pixel=0;pixel<NUMPIXELS;pixel++) {
+      switch (dir) {
+        case 0: if (ys[pixel]<=i)     pixels.setPixelColor(pixel,col); break;  //Wipes from top to botom
+        case 1: if (ys[pixel]>=-1*i)  pixels.setPixelColor(pixel,col); break;  //Wipes from bottom to top
+        case 2: if (xs[pixel]<=i)     pixels.setPixelColor(pixel,col); break;  //Wipes from left to right
+        case 3: if (xs[pixel]>=-1*i)  pixels.setPixelColor(pixel,col); break;  //Wipes from right to left
+      }
+    }
+    pixels.show();
+    if (changeMode()) return;
+  }
+}
+void circleFrom(colour col=pixels.Color(0,0,0),int radStep=5,int centerLED = 90,int dir=0) { //Circles in or out from a particular LED on the snowflake
+  int maxDistance = 0;
+  int distances[NUMPIXELS];
+
+  for (int i=0; i<NUMPIXELS;i++) {
+    distances[i] = pow(pow(xs[i]-xs[centerLED],2)+pow(ys[i]-ys[centerLED],2),0.5 );
+    if (distances[i]>maxDistance) maxDistance = distances[i];
+  }
+  for (int radius = 0;radius<=maxDistance+radStep;radius+=radStep) {
+    if (dir==0) for (int i=0; i<NUMPIXELS;i++) if (distances[i]<=radius) pixels.setPixelColor(i,col);             //Circle in
+    if (dir==1) for (int i=0; i<NUMPIXELS;i++) if (distances[i]>=maxDistance-radius) pixels.setPixelColor(i,col); //Circle out
+    pixels.show();
+    if (changeMode()) return;
+  }
+}
+void rotate(colour col=pixels.Color(0,0,0),float rotateSpeed=0.15,int firstSpeed = 30,int radius = 400) {
+  //Stage0 - Run up the first bar of the rotate
+  for (int pixel:spokes[0]) {
+    if (ys[pixel]<-radius) break;
+    pixels.setPixelColor(pixel,col);
+    pixels.show();
+    delay(firstSpeed);
+    if (changeMode()) return;
+  }
+  for (float a=-PI/2+rotateSpeed;a<=3*PI/2;a+=rotateSpeed) {
+    for (int pixel=0;pixel<NUMPIXELS;pixel++) {
+      if (xs[pixel]>=0 && ys[pixel]<=xs[pixel]*tan(a)  && pow(xs[pixel],2)+pow(ys[pixel],2)<=pow(radius,2)) pixels.setPixelColor(pixel,col);
+      if (ys[pixel]>=xs[pixel]*tan(a) && a>=PI/2 && pow(xs[pixel],2)+pow(ys[pixel],2)<=pow(radius,2)) pixels.setPixelColor(pixel,col);
+    }
+    if (changeMode()) return;
+    pixels.show();
+  }
+}
+
+//All modes
+
 void mode0() { //Blue-green random pixels
   //Run at start
   for (int i=0; i<NUMPIXELS;i++) {
@@ -14,215 +65,67 @@ void mode0() { //Blue-green random pixels
     modeChange = changeMode();
   }
 }
-void mode1() { //Random wipe
-  int dirs[] = {2,5,3,4};
-  for (int i=0;i<4;i++) {
-    wipe(random(255),random(255),random(255),15,dirs[i]);
-    if (changeMode()) return;
-  }
-}
-void mode2() {
-  for (int col=0;col<6;col++) {
+
+void mode1() {
+  for (colour col:mainCols) {
     for (int i=0;i<91;i++) {
-      pixels.setPixelColor(spiral[i],mainCols[col]);
+      pixels.setPixelColor(spiral[i],col);
       pixels.show();
       delay(10);
       if (changeMode()) return;
     }
   }
 }
-void mode3() {
-  for (int col=0;col<6;col+=2) {
-    wipe(0,0,0,100,0,false,false,mainCols[col]);
-    wipe(0,0,0,100,1,false,false,mainCols[col+1]);
-    if (changeMode()) break;
-  }
-}
-void mode4() {
-  for (int col=0;col<6;col+=2) {
-    wipe(0,0,0,35,2,false,false,mainCols[col]);
-    wipe(0,0,0,35,3,false,false,mainCols[col+1]);
-    if (changeMode()) return;
-  }
-}
-void mode5() {
-  for (int col=0;col<6;col+=2) {
-    wipe(0,0,0,35,4,false,false,mainCols[col]);
-    wipe(0,0,0,35,5,false,false,mainCols[col+1]);
-    if (changeMode()) return;
-  }
-}
-void mode6() {
-  for (int col=0;col<6;col+=2) {
-    wipe(0,0,0,100,6,false,false,mainCols[col]);
-    wipe(0,0,0,100,7,false,false,mainCols[col+1]);
-    if (changeMode()) return;
-  }
-}
-void mode7() {
-  int centerLED = 0;
-  int distances[NUMPIXELS];
-  int maxDistance = 0;
-  for (int i=0; i<NUMPIXELS;i++) {
-    int distance = int(sqrt(sq(xs[i]-xs[centerLED])+sq(ys[i]-ys[centerLED]))); 
-    distances[i] = distance;
-    if (distance>maxDistance) maxDistance = distance;
-  }
-  for (int radius=0;radius<maxDistance;radius++) {
-    for (int i=0; i<NUMPIXELS;i++) {
-      if (distances[i]<=radius) pixels.setPixelColor(i,pixels.Color(255,0,0));  
-    }  
-    pixels.show();
-    delay(20);
-  }
-}
-
-/*
-void mode0() {
-  for (int i=0; i<91; i++) {
-      pixels.setPixelColor(i,pixels.Color((100*i/91),(100-100*i/91),0));
-      pixels.show();  
-      delay(10);
-  }
-  for (int i=90; i>=0; i--) {
-      pixels.setPixelColor(i,pixels.Color(0,0,0));
-      pixels.show();  
-      delay(10);
-  }
-}
-
-void mode1() {
-  for (int i=0; i<91; i++) {
-      pixels.setPixelColor(i,pixels.Color((100*i/91),0,(100-100*i/91)));
-      pixels.show();  
-      delay(15);
-  }
-  delay(1000);
-  for (int i=90; i>=0; i--) {
-      pixels.setPixelColor(i,pixels.Color((100*i/91),(100-100*i/91),0));
-      pixels.show();  
-      delay(15);
-  }
-  delay(1000);
-}
-
 void mode2() {
-  int dist = 100;
-  wipe(255,0,0,dist,0);
-  wipe(0,255,0,dist,1);
-  wipe(0,0,255,dist,0);
-  wipe(255,0,0,dist,1);
-  wipe(0,255,0,dist,0);
-  wipe(0,0,255,dist,1);  
+  int dir=0;
+  for (colour col:mainCols) {
+    if (changeMode()) return;
+    circleFrom(col,5,90,dir=1-dir);
+  }
 }
 void mode3() {
-  int dist = 20;
-  wipe(255,0,0,dist,2);
-  wipe(0,255,0,dist,3);
-  wipe(0,0,255,dist,2);
-  wipe(255,0,0,dist,3);
-  wipe(0,255,0,dist,2);
-  wipe(0,0,255,dist,3);  
+  int dir=0;
+  for (colour col:mainCols) {
+    if (changeMode()) return;
+    wipe(col,4,dir++);
+    if (dir>=4) dir=0;
+  }
 }
 void mode4() {
-  int dist = 30;
-  wipe(255,0,0,dist,4);
-  wipe(0,255,0,dist,5);
-  wipe(0,0,255,dist,4);
-  wipe(255,0,0,dist,5);
-  wipe(0,255,0,dist,4);
-  wipe(0,0,255,dist,5);  
+  for (colour col:mainCols) {
+    circleFrom(col,5,int(random(90)));
+    if (changeMode()) return;
+  }
 }
 void mode5() {
-  int dist = 30;
-  wipe(255,0,0,dist,2);
-  wipe(0,255,0,dist,4);
-  wipe(0,0,255,dist,3);
-  wipe(255,0,0,dist,5);
-  wipe(0,255,0,dist,0);
-  wipe(0,0,255,dist,1);
+  for (int pixel=0;pixel<NUMPIXELS;pixel++) {
+    int r = int(float(xs[pixel]+400)*255/800);
+    int g = int(float(ys[pixel]+400)*255/800);
+
+    pixels.setPixelColor(pixel,pixels.Color(r,g,0));
+  }
+  pixels.show();
 }
 void mode6() {
-  int dist = 150;
-  wipe(255,0,0,dist,6);
-  wipe(0,255,0,dist,6);
-  wipe(0,0,255,dist,6);
-  wipe(255,0,0,dist,6);
-  wipe(0,255,0,dist,6);
-  wipe(0,0,255,dist,6);
+  for (colour col:mainCols) {
+    rotate(col);
+    if (changeMode()) return;
+  }
 }
 void mode7() {
-  int r = 255;int g=0;int b=0;int dist = 50;
-  int r2 = 0;int g2 = 255; int b2 = 0;
-  for (int row=0; row<27; row++) {
-    int invrow = 26-row;
-    for (int i=0;i<91;i++) {
-      if (rows[i]==row && (wings[i]==0 || wings[i]==3 || wings[i]==6)) {pixels.setPixelColor(i,pixels.Color(r,g,b));}
-      if (rows[i]==invrow && !(wings[i]==0 || wings[i]==3 || wings[i]==6)) {pixels.setPixelColor(i,pixels.Color(r2,g2,b2));}
-    } 
-    delay(dist); pixels.show();
+  int delayVal = 75;
+  for (colour col:mainCols) {
+    for (int i=0;i<8;i++) {
+      for (int j=0;j<6;j++) pixels.setPixelColor(spokes[j][i],col);
+      pixels.show();
+      delay(delayVal);
+      if (changeMode()) return;
+    }
+    for (int i=0;i<10;i++) {
+      for (int j=0;j<6;j++) pixels.setPixelColor(otherLines[j][i],col);
+      pixels.show();
+      delay(delayVal);
+      if (changeMode()) return;
+    }
   }
-  pixels.clear();
-  //else if (dir==3) {for (int row=26; row>=0; row--) {for (int i=0;i<91;i++) {if (rows[i]==row) {pixels.setPixelColor(i,pixels.Color(r,g,b));}} delay(dist); pixels.show();}}
 }
-void mode8() {
-  int dist = 100;
-  split(255,0,0,dist,2);
-  split(0,255,0,dist,3);  
-}
-
-void mode9() {
-    int r = 255;
-    int g = 0;
-    int b = 0;
-    int stage = 0;
-    int diff=5;
-    while (stage<=5) {
-        if (stage==0) {g+=diff; if (g>=255) {g=255; stage+=1;}}
-        else if (stage==1) {r-=diff; if (r<=0) {r=0; stage+=1;}}
-        else if (stage==2) {b+=diff; if (b>=255) {b=255; stage+=1;}}
-        else if (stage==3) {g-=diff; if (g<=0) {g=0; stage+=1;}}
-        else if (stage==4) {r+=diff; if (r>=255) {r=255; stage+=1;}}
-        else if (stage==5) {b-=diff; if (b<=0) {b=0; stage+=1;}}
-        for (int i=0; i<91; i++) {pixels.setPixelColor(i,pixels.Color(r,g,b));}
-        pixels.show();
-      }
-}
-void mode10() {
-    int r[] = {255,223,191,159,127,95,63,31};
-    int g[] = {0,0,0,0,0,0,0,0};
-    int b[] = {0,0,0,0,0,0,0,0};
-    int stage[] = {0,0,0,0,0,0,0,0};
-    int diff=20;
-    while (stage[7]<=5) {
-        for (int j=0; j<8; j++) {
-          if (stage[j]==0) {g[j]+=diff; if (g[j]>=255) {g[j]=255; stage[j]+=1;}}
-          else if (stage[j]==1) {r[j]-=diff; if (r[j]<=0) {r[j]=0; stage[j]+=1;}}
-          else if (stage[j]==2) {b[j]+=diff; if (b[j]>=255) {b[j]=255; stage[j]+=1;}}
-          else if (stage[j]==3) {g[j]-=diff; if (g[j]<=0) {g[j]=0; stage[j]+=1;}}
-          else if (stage[j]==4) {r[j]+=diff; if (r[j]>=255) {r[j]=255; stage[j]+=1;}}
-          else if (stage[j]==5) {b[j]-=diff; if (b[j]<=0) {r[j]=255;g[j]=0;b[j]=0; stage[j]+=1;}}
-          for (int i=0; i<91; i++) {if (rings[i]==j) {pixels.setPixelColor(i,pixels.Color(r[j],g[j],b[j]));}}
-          pixels.show();
-        }
-      }
-}
-void mode11() {
-    int r[] = {255,246,237,228,219,210,201,192,183,174,165,156,147,138,129,120,111,102,93,84,75,66,57,48,39,30,21};
-    int g[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    int b[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    int stage[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    int diff=40;
-    while (stage[26]<=5) {
-        for (int j=0; j<27; j++) {
-          if (stage[j]==0) {g[j]+=diff; if (g[j]>=255) {g[j]=255; stage[j]+=1;}}
-          else if (stage[j]==1) {r[j]-=diff; if (r[j]<=0) {r[j]=0; stage[j]+=1;}}
-          else if (stage[j]==2) {b[j]+=diff; if (b[j]>=255) {b[j]=255; stage[j]+=1;}}
-          else if (stage[j]==3) {g[j]-=diff; if (g[j]<=0) {g[j]=0; stage[j]+=1;}}
-          else if (stage[j]==4) {r[j]+=diff; if (r[j]>=255) {r[j]=255; stage[j]+=1;}}
-          else if (stage[j]==5) {b[j]-=diff; if (b[j]<=0) {r[j]=255;g[j]=0;b[j]=0; stage[j]+=1;}}
-          for (int i=0; i<91; i++) {if (rows[i]==j) {pixels.setPixelColor(i,pixels.Color(r[j],g[j],b[j]));}}
-          pixels.show();
-        }
-      }
-}*/
